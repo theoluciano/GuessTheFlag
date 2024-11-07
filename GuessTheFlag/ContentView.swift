@@ -7,9 +7,20 @@
 
 import SwiftUI
 
+struct FlagImageView: View {
+    var imageName: String
+    
+    var body: some View {
+        Image(imageName)
+            .clipShape(.capsule)
+            .shadow(radius: 5)
+    }
+}
+
 struct ContentView: View {
     @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Spain", "UK", "Ukraine", "US"].shuffled()
     @State private var correctAnswer = Int.random(in: 0...2)
+    @State private var chosenAnswer = -1
     @State private var userScore = 0
     @State private var currentRound = 1
     
@@ -53,11 +64,17 @@ struct ContentView: View {
                     
                     ForEach(0..<3) { number in
                         Button {
+                            chosenAnswer = number
                             flagTapped(number)
                         } label: {
-                            Image(countries[number])
-                                .clipShape(.capsule)
-                                .shadow(radius: 5)
+                            FlagImageView(imageName: countries[number])
+                                .rotation3DEffect(
+                                    .degrees(chosenAnswer == number ? 180 : 0),
+                                    axis: (x: 0, y: 1, z: 0)
+                                )
+                                .opacity(chosenAnswer != number && chosenAnswer != -1 ? 0.4 : 1)
+                                .saturation(chosenAnswer != number && chosenAnswer != -1 ? 0.2 : 1)
+                                .animation(.bouncy, value: chosenAnswer)
                         }
                     }
                 }
@@ -110,8 +127,6 @@ struct ContentView: View {
             incorrectMessage = "\n \n You chose the flag for \(countries[number])"
             showingScore = true
         }
-        
-
     }
     
     func askQuestion() {
@@ -124,6 +139,7 @@ struct ContentView: View {
         currentRound += 1
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        chosenAnswer = -1
     }
 }
 
